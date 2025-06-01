@@ -3,7 +3,7 @@ import cors from 'cors';
 import { MongoClient } from 'mongodb';
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const uri = 'mongodb+srv://miren:admin@mydbcluster.rcwsox0.mongodb.net/?retryWrites=true&w=majority&appName=MYDBCLUSTER';
 const client = new MongoClient(uri);
 const dbName = 'portfolio';
