@@ -57,7 +57,7 @@ const handleSubmit = async (e) => {
     // Try saving to MongoDB, but ignore if it fails
     let dbSaved = false;
     try {
-      const dbResponse = await fetch('http://localhost:5000/api/contact', {
+      const dbResponse = await fetch('https://portfolio-mnvp.onrender.com/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
