@@ -1,18 +1,18 @@
-import cors from 'cors';
 import express from 'express';
+import cors from 'cors';
 import { MongoClient } from 'mongodb';
 
 const app = express();
 const PORT = 5000;
 
 app.use(cors());
-app.use(express.json()); // Needed to parse JSON body
+app.use(express.json()); // Enables JSON body parsing
 
 const uri = 'mongodb+srv://miren:admin@mydbcluster.rcwsox0.mongodb.net/?retryWrites=true&w=majority&appName=MYDBCLUSTER';
 const client = new MongoClient(uri);
 const dbName = 'portfolio';
 
-// Endpoint to fetch projects
+// Fetch projects
 app.get('/api/projects', async (req, res) => {
   try {
     await client.connect();
@@ -27,13 +27,9 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// ✅ Endpoint to save contact form submission
+// Save contact message
 app.post('/api/contact', async (req, res) => {
   const { name, email, message } = req.body;
-
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
 
   try {
     await client.connect();
@@ -42,12 +38,13 @@ app.post('/api/contact', async (req, res) => {
       name,
       email,
       message,
-      createdAt: new Date(),
+      date: new Date()
     });
-    res.status(200).json({ message: 'Message saved successfully', id: result.insertedId });
+
+    res.status(201).json({ message: 'Contact saved successfully', id: result.insertedId });
   } catch (error) {
-    console.error('Error saving message:', error);
-    res.status(500).json({ error: 'Failed to save message' });
+    console.error('Error saving contact:', error);
+    res.status(500).json({ error: 'Failed to save contact' });
   } finally {
     await client.close();
   }
