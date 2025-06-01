@@ -40,20 +40,23 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Send email via Formspree
-      const emailResponse = await fetch('https://formspree.io/f/manoganz', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      // Save message to MongoDB
+  try {
+    // Send email via Formspree
+    const emailResponse = await fetch('https://formspree.io/f/manoganz', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    // Try saving to MongoDB, but ignore if it fails
+    let dbSaved = false;
+    try {
       const dbResponse = await fetch('http://localhost:5000/api/contact', {
         method: 'POST',
         headers: {
@@ -61,30 +64,36 @@ const Contact = () => {
         },
         body: JSON.stringify(formData),
       });
+      dbSaved = dbResponse.ok;
+    } catch (dbError) {
+      console.warn('Could not save to DB:', dbError);
+    }
 
-      if (emailResponse.ok && dbResponse.ok) {
-        setSnackbar({
-          open: true,
-          message: 'Message sent and saved successfully!',
-          severity: 'success',
-        });
-        setFormData({ name: '', email: '', message: '' });
-      } else {
-        setSnackbar({
-          open: true,
-          message: 'Failed to send or save message. Please try again later.',
-          severity: 'error',
-        });
-      }
-    } catch (error) {
-      console.error('Submission error:', error);
+    if (emailResponse.ok) {
       setSnackbar({
         open: true,
-        message: 'An error occurred. Please try again later.',
+        message: dbSaved
+          ? 'Message sent and saved successfully!'
+          : 'Message sent! (Saved to DB failed)',
+        severity: 'success',
+      });
+      setFormData({ name: '', email: '', message: '' });
+    } else {
+      setSnackbar({
+        open: true,
+        message: 'Failed to send message via email. Please try again later.',
         severity: 'error',
       });
     }
-  };
+  } catch (error) {
+    console.error('Submission error:', error);
+    setSnackbar({
+      open: true,
+      message: 'An error occurred. Please try again later.',
+      severity: 'error',
+    });
+  }
+};
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
