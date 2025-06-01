@@ -1,20 +1,20 @@
-import EmailIcon from '@mui/icons-material/Email';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Alert,
-  Box,
-  Button,
   Container,
+  Typography,
   Grid,
+  TextField,
+  Button,
+  Box,
   Paper,
   Snackbar,
-  TextField,
-  Typography,
+  Alert,
 } from '@mui/material';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import EmailIcon from '@mui/icons-material/Email';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -43,33 +43,41 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://formspree.io/f/manoganz', {
+      // Send email via Formspree
+      const emailResponse = await fetch('https://formspree.io/f/manoganz', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-        }),
+        body: JSON.stringify(formData),
       });
-      if (response.ok) {
+
+      // Save message to MongoDB
+      const dbResponse = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (emailResponse.ok && dbResponse.ok) {
         setSnackbar({
           open: true,
-          message: 'Message sent successfully!',
+          message: 'Message sent and saved successfully!',
           severity: 'success',
         });
         setFormData({ name: '', email: '', message: '' });
       } else {
         setSnackbar({
           open: true,
-          message: 'Failed to send message. Please try again later.',
+          message: 'Failed to send or save message. Please try again later.',
           severity: 'error',
         });
       }
     } catch (error) {
+      console.error('Submission error:', error);
       setSnackbar({
         open: true,
         message: 'An error occurred. Please try again later.',
